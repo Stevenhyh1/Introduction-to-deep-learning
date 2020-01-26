@@ -6,6 +6,15 @@
 
 using namespace std;
 
+int median_sum(const deque<int> &v) {
+    int n = v.size(), median = n/2, result = 0;
+    int num = v[median];
+    for (int i=0; i<v.size(); i++) {
+        result += abs(v[i]-num);
+    }
+    return result;
+}
+
 int main() {
     int n, L, B;
     char ch;
@@ -18,31 +27,18 @@ int main() {
     }
     sort(line.begin(), line.end());
     deque<int> dq(line.begin(), line.end());
-    int result=0, median=dq.size()/2;
-    int num = dq[median];
-    for (int i=0;i<dq.size(); i++) {
-        result += abs(dq[i] - num);
-    }
-    // cout << result;
-    bool even;
+    int result = median_sum(dq);
+
     while (result>B) {
         cout << result << endl;
-        even = (dq.size() % 2 == 0);
-        int cur_med = dq[median];
-        int front_dis = cur_med - dq.front(), back_dis = cur_med-dq[median];
+        int front_dis = result - dq.front(), back_dis = result-dq.back();
         if (front_dis > back_dis) {
-            result -= front_dis;
             dq.pop_front();
-            median--;
         }
         else {
-            result -= back_dis;
             dq.pop_back();
         }
-        if (even) {
-            median++;
-            result -= dq[median] - cur_med;
-        }
+        result = median_sum(dq);
     }
     cout << dq.size() << endl;
     return 0;

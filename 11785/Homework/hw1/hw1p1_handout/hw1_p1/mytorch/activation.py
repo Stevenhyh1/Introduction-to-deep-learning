@@ -66,6 +66,7 @@ class Sigmoid(Activation):
 
     def forward(self, x):
         # Might we need to store something before returning?
+        self.state = 1/(1+np.exp(-x))
         raise NotImplemented
 
     def derivative(self):
