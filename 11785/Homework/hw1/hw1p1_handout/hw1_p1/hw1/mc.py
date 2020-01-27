@@ -16,7 +16,7 @@ def question_2():
     return 'c'
     '''
     # raise NotImplemented
-    return 'b'
+    return 'a'
 
 def question_3():
     '''
