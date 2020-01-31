@@ -4,16 +4,11 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    int n;
+    int aa, ab, ac, ad;
     char ch;
-    cin >> n;
+    cin >> aa >> ab;
     cin.get(ch);
-    vector<int> nums;
-    for (int i=0; i<n; i++) {
-        int cur;
-        cin >> cur;
-        nums.push_back(cur);
-    }
-    // cout << nums.back();
+    cin >> ac >> ad;
+    
     
 }
