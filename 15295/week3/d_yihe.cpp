@@ -86,5 +86,4 @@ int main(int argc, char* argv[])  {
     for (int i=0; i<n; i++) {
         printf("%.10lf ", result[i]);
     }
-
 }
