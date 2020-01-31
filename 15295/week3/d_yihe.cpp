@@ -8,7 +8,7 @@ using namespace std;
 int n;
 int pos;
 vector<double> buoys;
-double eps = 1e-15;
+double eps = 1e-9;
 
 //vector index starts from 0
 
@@ -18,7 +18,7 @@ double myabs(double now)
 }
 
 double cal(double cur) {
-    double sum = 0, res = numeric_limits<int>::max();
+    double sum = 0, res = 1e8;
     for (int i=0; i<n; i++) {
         sum = 0;
         for (int j=0; j<i; j++) {
@@ -37,7 +37,7 @@ double cal(double cur) {
 
 int main(int argc, char* argv[])  {
     ifstream input;
-    input.open("../input.txt");
+    input.open("input.txt");
     if (input.is_open()) {
         input >> n;
         for (int i=0; i<n; i++) {
@@ -53,9 +53,9 @@ int main(int argc, char* argv[])  {
         exit(1);
     }
     double low = 0, high = 1e6;
-    int t=100;
-    while (t--) {
-    // while (myabs(high-low)>eps) {
+    // int t=100;
+    // while (t--) {
+    while (myabs(high-low)>eps) {
         double m1 = low + (high-low) / 2;
         double m2 = m1 + (high-m1) /2 ;
         if (cal(m1) > cal(m2)) {
@@ -78,11 +78,11 @@ int main(int argc, char* argv[])  {
     }
     result[pos] = buoys[pos];
 
-    freopen("../output.txt", "w", stdout);
+    freopen("output.txt", "w", stdout);
 
     printf("%.4f\n", res);
-    printf("%.4f\n",dis);
-    printf("%.d\n",pos);
+    // printf("%.4f\n",dis);
+    // printf("%.d\n",pos);
     for (int i=0; i<n; i++) {
         printf("%.10lf ", result[i]);
     }
