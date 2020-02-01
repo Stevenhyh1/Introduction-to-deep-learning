@@ -42,21 +42,23 @@ class BatchNorm(object):
             out (np.array): (batch_size, in_feature)
         """
 
-        # if eval:
-        #    # ???
-
         self.x = x
 
-        # self.mean = # ???
-        # self.var = # ???
-        # self.norm = # ???
-        # self.out = # ???
+        if eval:
+            self.norm = (self.x - self.running_mean) / (self.running_var + self.eps)
+            self.out = (self.norm * self.gamma + self.beta)
+        
+        else:
+            self.mean = np.mean(self.x,axis=0,keepdims=True)
+            self.var = np.var(self.x,axis=0,keepdims=True)
+            self.norm = (self.x - self.mean)/np.sqrt(self.var + self.eps)
+            self.out = self.norm * self.gamma + self.beta
 
-        # Update running batch statistics
-        # self.running_mean = # ???
-        # self.running_var = # ???
+            # Update running batch statistics
+            self.running_mean = self.mean
+            self.running_var = self.var
 
-        raise NotImplemented
+        # raise NotImplemented
 
 
     def backward(self, delta):
@@ -66,5 +68,14 @@ class BatchNorm(object):
         Return:
             out (np.array): (batch size, in feature)
         """
+        
+        dnorm = delta*self.gamma
+        self.dbeta = np.sum(delta,axis=0,keepdims=True)
+        self.dgamma = np.sum(delta*self.norm, axis=0, keepdims=True)
+        dvar = -0.5*np.sum((self.x-self.mean)*np.power((self.var + self.eps),-3/2), axis = 0, keepdims = True)
+        dmean = -np.sum(dnorm*np.power((self.var + self.eps),-0.5), axis = 0, keepdims = True) - 2*dvar*np.mean(self.x-self.mean, axis = 0, keepdims = True)
+        m = len(self.x)
+        dx = dnorm*np.power((self.var+self.eps),-0.5) + dvar*(2/m*(self.x-self.mean)) + dmean/m
 
-        raise NotImplemented
+        return dx
+        # raise NotImplemented
