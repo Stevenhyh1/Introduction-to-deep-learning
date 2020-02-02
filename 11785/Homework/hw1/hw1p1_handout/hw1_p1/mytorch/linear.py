@@ -22,10 +22,10 @@ class Linear():
         self.b = bias_init_fn(out_feature)
 
         # TODO: Complete these but do not change the names.
-        self.dW = np.zeros(in_feature, out_feature)
+        self.dW = np.zeros((in_feature, out_feature))
         self.db = np.zeros((1,out_feature))
 
-        self.momentum_W = np.zeros(in_feature,out_feature)
+        self.momentum_W = np.zeros((in_feature,out_feature))
         self.momentum_b = np.zeros((1,out_feature))
 
     def __call__(self, x):
@@ -52,5 +52,10 @@ class Linear():
             out (np.array): (batch size, in feature)
         """
         
-        # dx = 
-        raise NotImplemented
+        # Remember that the derivative need to be averaged over the batch size
+        dx = np.dot(delta, np.transpose(self.W))
+        self.db = np.dot(np.ones((1,len(self.x))), delta)/len(self.x)
+        self.dW = np.dot(np.transpose(self.x), delta)/len(self.x)
+        
+        return dx
+        # raise NotImplemented
