@@ -88,7 +88,7 @@ class MLP(object):
             x = self.linear_layers[j+self.num_bn_layers](x)
             x = self.activations[j+self.num_bn_layers](x)
         self.output = x
-        return x
+        return self.output
         # raise NotImplemented
 
     def zero_grads(self):
@@ -112,10 +112,17 @@ class MLP(object):
 
         for i in range(len(self.linear_layers)):
             # Update weights and biases here
-            # pass
+            
             cur_layer = self.linear_layers[i]
-            cur_layer.W -= self.lr*cur_layer.dW
-            cur_layer.b -= self.lr*cur_layer.db
+            # without momentum
+            # cur_layer.W -= self.lr*cur_layer.dW
+            # cur_layer.b -= self.lr*cur_layer.db
+            # with momentum
+            cur_layer.momentum_W = self.momentum*cur_layer.momentum_W - self.lr*cur_layer.dW
+            cur_layer.momentum_b = self.momentum*cur_layer.momentum_b - self.lr*cur_layer.db
+            cur_layer.W += cur_layer.momentum_W
+            cur_layer.b += cur_layer.momentum_b
+
         # Do the same for batchnorm layers
         for j in range(self.num_bn_layers):
             cur_norm = self.bn_layers[j]
@@ -172,11 +179,19 @@ def get_training_stats(mlp, dset, nepochs, batch_size):
     for e in range(nepochs):
 
         # Per epoch setup ...
+        cur_training_loss = 0
+        cur_training_error = 0
+        cur_validation_loss = 0
+        cur_validation_errors = 0
 
         for b in range(0, len(trainx), batch_size):
-
-            pass  # Remove this line when you start implementing this
+            
+            # pass  # Remove this line when you start implementing this
             # Train ...
+            mlp.train()
+            mlp.zero_grads()
+            outputs = mlp.forward()
+            cur_training_error += mlp.error(trainy)
 
         for b in range(0, len(valx), batch_size):
 

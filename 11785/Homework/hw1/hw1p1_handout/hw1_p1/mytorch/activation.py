@@ -66,7 +66,7 @@ class Sigmoid(Activation):
 
     def forward(self, x):
         # Might we need to store something before returning?
-        self.state = 1/(1+np.exp(-x))
+        self.state = 1/(1+np.exp(np.negative(x)))
         return self.state
         # raise NotImplemented
 
@@ -86,7 +86,7 @@ class Tanh(Activation):
         super(Tanh, self).__init__()
 
     def forward(self, x):
-        self.state = (np.exp(x) - np.exp(-x))/(np.exp(x) + np.exp(-x))
+        self.state = (np.exp(x) - np.exp(np.negative(x)))/(np.exp(x) + np.exp(np.negative(x)))
         return self.state
         # raise NotImplemented
 

@@ -52,12 +52,13 @@ class BatchNorm(object):
             self.mean = np.mean(self.x,axis=0,keepdims=True)
             self.var = np.var(self.x,axis=0,keepdims=True)
             self.norm = (self.x - self.mean)/np.sqrt(self.var + self.eps)
-            self.out = self.norm * self.gamma + self.beta
+            self.out = self.gamma*self.norm  + self.beta
 
             # Update running batch statistics
             self.running_mean = self.mean
             self.running_var = self.var
 
+        return self.out
         # raise NotImplemented
 
 
