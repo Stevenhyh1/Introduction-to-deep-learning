@@ -82,7 +82,10 @@ class MLP(object):
         # Complete the forward pass through your entire MLP.
         for i in range(self.num_bn_layers):
             x = self.linear_layers[i](x)
-            x = self.bn_layers[i](x)
+            if self.train_mode:
+                x = self.bn_layers[i](x)
+            else:
+                x = self.bn_layers[i](x, eval=True)
             x = self.activations[i](x)
         for j in range(len(self.linear_layers)-self.num_bn_layers):
             x = self.linear_layers[j+self.num_bn_layers](x)
@@ -177,33 +180,52 @@ def get_training_stats(mlp, dset, nepochs, batch_size):
     # Setup ...
 
     for e in range(nepochs):
-
+        print(f"Epoch: {e+1}")
         # Per epoch setup ...
-        cur_training_loss = 0
-        cur_training_error = 0
-        cur_validation_loss = 0
-        cur_validation_errors = 0
+        cur_training_loss = []
+        cur_training_error = []
+        cur_validation_loss = []
+        cur_validation_errors = []
+
 
         for b in range(0, len(trainx), batch_size):
             
             # pass  # Remove this line when you start implementing this
             # Train ...
+            
             mlp.train()
             mlp.zero_grads()
-            outputs = mlp.forward()
-            cur_training_error += mlp.error(trainy)
+            mlp(trainx[b:b+batch_size])
+            cur_training_error.append(mlp.error(trainy[b:b+batch_size])/batch_size)
+            cur_training_loss.append(mlp.total_loss(trainy[b:b+batch_size])/batch_size)
+            mlp.backward(trainy[b:b+batch_size])
+            mlp.step()
 
         for b in range(0, len(valx), batch_size):
 
-            pass  # Remove this line when you start implementing this
+            # pass  # Remove this line when you start implementing this
             # Val ...
-
+            mlp.eval()
+            mlp.zero_grads()
+            mlp(valx[b:b+batch_size])
+            cur_validation_errors.append(mlp.error(valy[b:b+batch_size])/batch_size)
+            cur_validation_loss.append(mlp.total_loss(valy[b:b+batch_size])/batch_size)
+        
         # Accumulate data...
+        training_losses[e] = sum(cur_training_loss)/len(cur_training_loss)
+        training_errors[e] = sum(cur_training_error)/len(cur_training_error)
+        validation_losses[e] = sum(cur_validation_loss)/len(cur_validation_loss)
+        validation_errors[e] = sum(cur_validation_errors)/len(cur_validation_errors)
 
-    # Cleanup ...
+        # Cleanup ...
+        initial_indices = np.arange(len(trainx))
+        np.random.shuffle(initial_indices)
+        trainx = trainx[initial_indices]
+        trainy = trainy[initial_indices]
+
+        print(training_losses[e], training_errors[e], validation_losses[e], validation_errors[e])
 
     # Return results ...
 
-    # return (training_losses, training_errors, validation_losses, validation_errors)
-
-    raise NotImplemented
+    return (training_losses, training_errors, validation_losses, validation_errors)
+    # raise NotImplemented
