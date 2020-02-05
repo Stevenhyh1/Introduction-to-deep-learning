@@ -4,7 +4,6 @@
 
 using namespace std;
 
-double eps = 1e-10;
 double a,b,c,d;
 
 bool val (double cur) {
@@ -29,8 +28,9 @@ int main(int argc, char *argv[]) {
     cin.get(ch);
     cin >> c >> d;
 
-    double low = 0, high = fabs(max(max(a,b),max(c,d)));
-    while (high-low > eps)  {
+    double low = 0, high = max(max(fabs(a),fabs(b)),max(fabs(c),fabs(d)));
+    int t = 100;
+    while (t--) {
         double mid = low + (high-low) / 2;
         if (val(mid)) {
             high = mid;
