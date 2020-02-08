@@ -1,0 +1,1 @@
+Validation Loss: 5 	 Validation Acc: 8
