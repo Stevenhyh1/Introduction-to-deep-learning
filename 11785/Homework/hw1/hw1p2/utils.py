@@ -6,10 +6,13 @@ def load_data (file_path, k):
     data = np.load(file_path, allow_pickle=True)
     data_dict = {}
     cur = 0
+    eps = 1e-8
     index_array = np.zeros(len(data),dtype=int)
     for i in range(len(data)):
         cur_data = data[i]
-        data_dict[cur] = cur_data
+        mean = np.mean(cur_data, axis=1).reshape(-1,1)
+        var = np.var(cur_data,axis=1).reshape(-1,1)
+        data_dict[cur] = (cur_data-mean)/np.sqrt(var+eps)
         index_array[i] = cur
         # for j in range(len(cur_data)):
             # neighbour = []

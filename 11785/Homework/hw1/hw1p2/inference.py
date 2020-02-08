@@ -11,7 +11,6 @@ from torch.utils.data import DataLoader, Dataset
 import utils
 from model import MLP
 
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--batch_size',type=int, default=256, help='Batch size')
 parser.add_argument('--lr',type=float,default=0.001,help='Learning rate')
@@ -20,7 +19,7 @@ parser.add_argument('--num_epoch',type=float,default=15,help='Number of Epoch')
 parser.add_argument('--data_path',type=str,default='/home/yihe/Data')
 parser.add_argument('--label_path',type=str,default='/home/yihe/Data')
 parser.add_argument('--save_file',type=str,default='./result.csv')
-parser.add_argument('--model_file',type=str,default='./1_model.pth.tar')
+parser.add_argument('--model_file',type=str,default='./14_model.pth.tar')
 parser.add_argument('--k', type=int, default=12)
 args = parser.parse_args()
 
