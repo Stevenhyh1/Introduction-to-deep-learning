@@ -11,8 +11,8 @@ class MLP(nn.Module):
         self.fc2 = nn.Linear(2048,4096)
         self.bn2 = nn.BatchNorm1d(4096)
         self.dp2 = nn.Dropout(p=0.5)
-        self.fc3 = nn.Linear(4096,1024)
-        self.fc4 = nn.Linear(1024,1024)
+        self.fc3 = nn.Linear(4096,2048)
+        self.fc4 = nn.Linear(2048,1024)
         self.fc5 = nn.Linear(1024,output_dimension)
 
     def forward(self,x):
