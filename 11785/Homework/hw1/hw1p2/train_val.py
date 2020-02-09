@@ -13,12 +13,11 @@ from model import MLP
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--batch_size',type=int, default=512, help='Batch size')
-parser.add_argument('--lr',type=float,default=0.001,help='Learning rate')
+parser.add_argument('--lr',type=float,default=0.0001,help='Learning rate')
 parser.add_argument('--momentum',type=float,default=0.9,help='SGD momentum')
 parser.add_argument('--num_epoch',type=float,default=15,help='Number of Epoch')
-parser.add_argument('--data_path',type=str,default='/home/yihe/Data')
-parser.add_argument('--label_path',type=str,default='/home/yihe/Data')
-parser.add_argument('--save_file',type=str,default='./model.pth.tar')
+parser.add_argument('--data_path',type=str,default='/home/ubuntu')
+parser.add_argument('--label_path',type=str,default='/home/ubuntu')
 parser.add_argument('--k', type=int, default=12)
 args = parser.parse_args()
 
@@ -118,6 +117,7 @@ if __name__ == '__main__':
     #Model
     model = MLP(input_dim, output_dim)
     model.to(device)
+    model.load_state_dict(torch.load('14_model8.pth.tar'))
 
     #Loss Function
     criterion = nn.CrossEntropyLoss()
@@ -130,7 +130,7 @@ if __name__ == '__main__':
 
     global_acc = 0
     for epoch in range(num_epoch):
-        print(f'Epoch {epoch} starts:')
+        print(f'Epoch {epoch+15} starts:')
         train_start = time.time()
         train_loss, train_acc = Train(
             train_dataloader,
@@ -140,7 +140,7 @@ if __name__ == '__main__':
         )
         train_end = time.time()
 
-        print(f"Epoch {epoch} completed in: {train_end-train_start}s \t Loss: {train_loss} \t Acc: {train_acc}")
+        print(f"Epoch {epoch+15} completed in: {train_end-train_start}s \t Loss: {train_loss} \t Acc: {train_acc}")
 
         val_start = time.time()
         val_loss, val_acc = Val(
@@ -150,6 +150,6 @@ if __name__ == '__main__':
         )
         val_end = time.time()
         if val_acc > global_acc:
-            torch.save(model.state_dict(), f"./{epoch}_model.pth.tar")
+            torch.save(model.state_dict(), f"./{epoch+15}_model8.pth.tar")
             global_acc = val_acc
         print(f"Validation Loss: {val_loss} \t Validation Acc: {val_acc}")
