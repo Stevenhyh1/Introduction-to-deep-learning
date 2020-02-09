@@ -8,26 +8,23 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset
 import faulthandler
 
-faulthandler.enable()
+faulthandler.enable() 
 
 import utils
 from model import MLP
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--batch_size',type=int, default=256, help='Batch size')
-parser.add_argument('--lr',type=float,default=0.0002,help='Learning rate')
+parser.add_argument('--batch_size',type=int, default=512, help='Batch size')
+parser.add_argument('--lr',type=float,default=0.0001,help='Learning rate')
 parser.add_argument('--momentum',type=float,default=0.9,help='SGD momentum')
 parser.add_argument('--num_epoch',type=float,default=15,help='Number of Epoch')
 parser.add_argument('--data_path',type=str,default='/home/yihe/Data')
 parser.add_argument('--label_path',type=str,default='/home/yihe/Data')
-parser.add_argument('--save_file',type=str,default='./model.pth.tar')
-parser.add_argument('--k', type=int, default=16)
+parser.add_argument('--k', type=int, default=12)
 args = parser.parse_args()
 
 def Train(data, model, criterion, optimizer):
-    # loss_list = []
-    # acc_list = []
     epoch_loss = 0
     epoch_acc = 0
     count = 0
@@ -44,17 +41,12 @@ def Train(data, model, criterion, optimizer):
         count += 1
         epoch_acc += np.mean((indices==label).int().cpu().numpy())
         epoch_loss += loss.detach()
-        # loss_list.append(loss)
-        # acc_list.append(acc)
         loss.backward()
         optimizer.step()
-
     return epoch_loss/count, epoch_acc/count
 
 def Val(data, model, criterion):
     print(f'Validation: ')
-    # loss_list = []
-    # acc_list = []
     epoch_loss = 0
     epoch_acc = 0
     count = 0
@@ -121,6 +113,7 @@ if __name__ == '__main__':
     #Model
     model = MLP(input_dim, output_dim)
     model.to(device)
+    # model.load_state_dict(torch.load('14_model8.pth.tar'))
 
     #Loss Function
     criterion = nn.CrossEntropyLoss()
@@ -133,6 +126,7 @@ if __name__ == '__main__':
 
     global_acc = 0
     for epoch in range(num_epoch):
+        epoch = epoch+1
         print(f'Epoch {epoch} starts:')
         train_start = time.time()
         train_loss, train_acc = Train(
@@ -153,6 +147,6 @@ if __name__ == '__main__':
         )
         val_end = time.time()
         if val_acc > global_acc:
-            torch.save(model.state_dict(), f"./{epoch}_model.pth.tar")
+            torch.save(model.state_dict(), f"./{epoch}_model8.pth.tar")
             global_acc = val_acc
         print(f"Validation Loss: {val_loss} \t Validation Acc: {val_acc}")

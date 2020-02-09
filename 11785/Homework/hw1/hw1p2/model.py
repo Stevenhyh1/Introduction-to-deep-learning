@@ -5,14 +5,14 @@ import torch.nn.functional as F
 class MLP(nn.Module):
     def __init__(self,input_dimension,output_dimension):
         super(MLP, self).__init__()
-        self.fc1 = nn.Linear(input_dimension, 2048)
-        self.bn1 = nn.BatchNorm1d(2048)
+        self.fc1 = nn.Linear(input_dimension, 4096)
+        self.bn1 = nn.BatchNorm1d(4096)
         self.dp1 = nn.Dropout(p=0.5)
-        self.fc2 = nn.Linear(2048,4096)
-        self.bn2 = nn.BatchNorm1d(4096)
+        self.fc2 = nn.Linear(4096,2048)
+        self.bn2 = nn.BatchNorm1d(2048)
         self.dp2 = nn.Dropout(p=0.5)
-        self.fc3 = nn.Linear(4096,2048)
-        self.fc4 = nn.Linear(2048,1024)
+        self.fc3 = nn.Linear(2048,1024)
+        self.fc4 = nn.Linear(1024,1024)
         self.fc5 = nn.Linear(1024,output_dimension)
 
     def forward(self,x):

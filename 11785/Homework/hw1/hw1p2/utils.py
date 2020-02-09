@@ -14,20 +14,6 @@ def load_data (file_path, k):
         var = np.var(cur_data,axis=1).reshape(-1,1)
         data_dict[cur] = (cur_data-mean)/np.sqrt(var+eps)
         index_array[i] = cur
-        # for j in range(len(cur_data)):
-            # neighbour = []
-            # for n in range(k):
-            #     if j+n-k < 0:
-            #         neighbour.append(np.zeros(40))
-            #     else:
-            #         neighbour.append(data[i][j+n-k])
-            # neighbour.append(data[i][j])
-            # for n in range(k):
-            #     if j+n+1 >= len(cur_data):
-            #         neighbour.append(np.zeros(40))
-            #     else:
-            #         neighbour.append(data[i][j+n+1])
-            # data_dict[cur+j] = np.hstack(neighbour) 
         cur += len(cur_data)
     return data_dict, index_array
 
