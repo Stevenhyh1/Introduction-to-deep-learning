@@ -36,7 +36,22 @@ class Conv1D():
         Return:
             out (np.array): (batch_size, out_channel, output_size)
         """
-        raise NotImplemented
+        
+        batch_size = x.shape[0]
+        in_width = x.shape[-1]
+        out_width = int(np.floor(1+(in_width-self.kernel_size)/self.stride))
+        out = np.zeros((batch_size,self.out_channel,out_width))
+        for n in range(batch_size):
+            for k2 in range(self.out_channel):
+                bias = self.b[k2]
+                for t in range(out_width):
+                    affine = 0
+                    s = self.stride*t
+                    for k1 in range(self.in_channel):
+                        affine += np.dot(self.W[k2][k1],x[n][k1][s:s+self.kernel_size])
+                    out[n][k2][t] = bias + affine
+        return out
+        # raise NotImplemented
 
 
 
@@ -47,7 +62,7 @@ class Conv1D():
         Return:
             dx (np.array): (batch_size, in_channel, input_size)
         """
-        raise NotImplemented
+        # raise NotImplemented
 
 
 

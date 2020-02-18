@@ -6,7 +6,7 @@
 
 def question_1():
     # raise NotImplemented
-    return 'a'
+    return 'b'
 
 def question_2():
     # raise NotImplemented
@@ -18,7 +18,8 @@ def question_3():
 
 def question_4():
     # raise NotImplemented
-    
+    return 'a'
 
 def question_5():
-    raise NotImplemented
+    # raise NotImplemented
+    return 'a'
