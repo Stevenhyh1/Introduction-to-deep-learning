@@ -20,7 +20,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_base_matt6_boxed_full.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_base_matt6_boxed_full.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.39216 0.81961 0.93333 1"/>
@@ -122,7 +122,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/camera_mount.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/camera_mount.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.79216 0.81961 0.93333 1"/>
@@ -154,182 +154,7 @@
     <link name="camera_mount"/>
     <link name="camera_joint_link"/> -->
   <!-- Camera link -->
-  <link name="rs200_camera">
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://realsense_gazebo_plugin/models/realsense_camera/meshes/realsense.dae"/>
-      </geometry>
-    </visual>
-    <collision>
-      <geometry>
-        <box size="0.0078 0.130 0.0192"/>
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.0615752"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <inertia ixx="9.108e-05" ixy="0" ixz="0" iyy="2.51e-06" iyz="0" izz="8.931e-05"/>
-    </inertial>
-  </link>
-  <!-- Connect camera to parent frame-->
-  <joint name="realsense_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="rs200_camera"/>
-    <origin rpy="0 .33 0" xyz="0.13 0 0.285"/>
-  </joint>
-  <!-- Virtual links representing the cameras positons and orientations-->
-  <link name="color"/>
-  <link name="depth"/>
-  <link name="ired1"/>
-  <link name="ired2"/>
-  <!-- Joints positioning the virtual links with respect to the camera main link-->
-  <joint name="color_joint" type="fixed">
-    <parent link="rs200_camera"/>
-    <child link="color"/>
-    <!-- <origin xyz="0 -0.046 0.004" rpy="0 0 0"/> -->
-    <!-- The default position is change since in Rviz the cloud depth axis is Z not X-->
-    <origin rpy="1.57075 3.1415 1.57075" xyz="0 -0.046 0.004"/>
-  </joint>
-  <joint name="depth_joint" type="fixed">
-    <parent link="rs200_camera"/>
-    <child link="depth"/>
-    <origin rpy="0 0 0" xyz="0 -0.03 0.004"/>
-  </joint>
-  <joint name="ired1_joint" type="fixed">
-    <parent link="rs200_camera"/>
-    <child link="ired1"/>
-    <origin rpy="0 0 0" xyz="0 -0.06 0.004"/>
-  </joint>
-  <joint name="ired2_joint" type="fixed">
-    <parent link="rs200_camera"/>
-    <child link="ired2"/>
-    <origin rpy="0 0 0" xyz="0 0.01 0.004"/>
-  </joint>
-  <!-- **********************************************************-->
-  <!-- GAZEBO DEFINITIONS ***************************************-->
-  <!-- Load plugin to the model ("robot" in urdf format)-->
-  <gazebo>
-    <plugin filename="librealsense_gazebo_plugin.so" name="r200"/>
-    <!--<pose frame="">0 0 0.015 0 0 0</pose>-->
-  </gazebo>
-  <!-- Load parameters to model's main link-->
-  <gazebo reference="rs200_camera">
-    <self_collide>0</self_collide>
-    <enable_wind>0</enable_wind>
-    <kinematic>0</kinematic>
-    <gravity>1</gravity>
-    <!--<mu>1</mu>-->
-    <mu2>1</mu2>
-    <fdir1>0 0 0</fdir1>
-    <!--<slip1>0</slip1>
-        <slip2>0</slip2>-->
-    <kp>1e+13</kp>
-    <kd>1</kd>
-    <!--<max_vel>0.01</max_vel>
-        <min_depth>0</min_depth>-->
-    <sensor name="color" type="camera">
-      <pose frame="">0 -0.046 0.004 0 0 0</pose>
-      <camera name="rs200_camera">
-        <horizontal_fov>1.047</horizontal_fov>
-        <image>
-          <width>640</width>
-          <height>480</height>
-          <format>RGB_INT8</format>
-        </image>
-        <clip>
-          <near>0.1</near>
-          <far>100</far>
-        </clip>
-        <noise>
-          <type>gaussian</type>
-          <mean>0.0</mean>
-          <stddev>0.007</stddev>
-        </noise>
-      </camera>
-      <always_on>1</always_on>
-      <update_rate>60</update_rate>
-      <visualize>1</visualize>
-    </sensor>
-    <sensor name="ired1" type="camera">
-      <pose frame="">0 -0.06 0.004 0 0 0</pose>
-      <camera name="rs200_camera">
-        <horizontal_fov>1.047</horizontal_fov>
-        <image>
-          <width>640</width>
-          <height>480</height>
-          <format>L_INT8</format>
-        </image>
-        <clip>
-          <near>0.1</near>
-          <far>100</far>
-        </clip>
-        <noise>
-          <type>gaussian</type>
-          <mean>0.0</mean>
-          <stddev>0.05</stddev>
-        </noise>
-      </camera>
-      <always_on>1</always_on>
-      <update_rate>60</update_rate>
-      <visualize>0</visualize>
-    </sensor>
-    <sensor name="ired2" type="camera">
-      <pose frame="">0 0.01 0.004 0 0 0</pose>
-      <camera name="rs200_camera">
-        <horizontal_fov>1.047</horizontal_fov>
-        <image>
-          <width>640</width>
-          <height>480</height>
-          <format>L_INT8</format>
-        </image>
-        <clip>
-          <near>0.1</near>
-          <far>100</far>
-        </clip>
-        <noise>
-          <type>gaussian</type>
-          <mean>0.0</mean>
-          <stddev>0.05</stddev>
-        </noise>
-      </camera>
-      <always_on>1</always_on>
-      <update_rate>60</update_rate>
-      <visualize>0</visualize>
-    </sensor>
-    <sensor name="depth" type="depth">
-      <pose frame="">0 -0.03 0.004 0 0 0</pose>
-      <camera name="rs200_camera">
-        <horizontal_fov>1.047</horizontal_fov>
-        <image>
-          <width>640</width>
-          <height>480</height>
-        </image>
-        <clip>
-          <near>0.1</near>
-          <far>100</far>
-        </clip>
-        <noise>
-          <type>gaussian</type>
-          <mean>0.0</mean>
-          <stddev>0.100</stddev>
-        </noise>
-      </camera>
-      <always_on>1</always_on>
-      <update_rate>60</update_rate>
-      <visualize>0</visualize>
-    </sensor>
-  </gazebo>
-  <gazebo>
-    <plugin filename="libgazebo_ros_imu.so" name="imu_plugin">
-      <alwaysOn>true</alwaysOn>
-      <bodyName>base_link</bodyName>
-      <topicName>camera_imu</topicName>
-      <serviceName>imu_service</serviceName>
-      <gaussianNoise>0.0</gaussianNoise>
-      <updateRate>100.0</updateRate>
-    </plugin>
-  </gazebo>
+  
   <link name="base1__INPUT_INTERFACE">
     <inertial>
       <origin rpy="0 0 0" xyz="0.015005 0.001775 0.015011"/>
@@ -339,7 +164,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0.015"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_base_motor.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_base_motor.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.79216 0.81961 0.93333 1"/>
@@ -375,7 +200,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_left_link1_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_left_link1_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -422,7 +247,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_link2_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_link2_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -487,7 +312,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_link3_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_link3_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -562,7 +387,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0.015"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_base_motor.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_base_motor.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.79216 0.81961 0.93333 1"/>
@@ -598,7 +423,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_left_link1_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_left_link1_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -645,7 +470,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_link2_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_link2_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -710,7 +535,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_link3_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_link3_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -785,7 +610,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0.015"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_base_motor.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_base_motor.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.79216 0.81961 0.93333 1"/>
@@ -821,7 +646,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_left_link1_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_left_link1_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -868,7 +693,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_link2_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_link2_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -933,7 +758,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_link3_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_link3_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -1008,7 +833,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0.015"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_base_motor.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_base_motor.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.79216 0.81961 0.93333 1"/>
@@ -1044,7 +869,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_right_link1_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_right_link1_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -1091,7 +916,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_link2_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_link2_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -1156,7 +981,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_link3_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_link3_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -1231,7 +1056,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0.015"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_base_motor.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_base_motor.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.79216 0.81961 0.93333 1"/>
@@ -1267,7 +1092,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_right_link1_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_right_link1_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -1314,7 +1139,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_link2_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_link2_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -1379,7 +1204,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_link3_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_link3_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -1454,7 +1279,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0.015"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_base_motor.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_base_motor.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.79216 0.81961 0.93333 1"/>
@@ -1490,7 +1315,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_right_link1_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_right_link1_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -1537,7 +1362,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_link2_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_link2_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -1602,7 +1427,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://xMonsterCPG/meshes/M6_link3_red.STL"/>
+        <mesh filename="/home/yihe/Spring2020/16811/meshes/M6_link3_red.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -1669,385 +1494,5 @@
     <limit effort="0" velocity="0"/>
   </joint>
   <!-- ros_control plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
-      <robotNamespace>/m6</robotNamespace>
-      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
-      <legacyModeNS>true</legacyModeNS>
-    </plugin>
-  </gazebo>
-  <gazebo reference="base_link">
-    <material>Gazebo/Grey</material>
-  </gazebo>
-  <gazebo reference="base1__INPUT_INTERFACE">
-    <material>Gazebo/Red</material>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="shoulder1__INPUT_INTERFACE">
-    <material>Gazebo/Red</material>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="elbow1__INPUT_INTERFACE">
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="leg1__LAST_LINK">
-    <material>Gazebo/Grey</material>
-    <mu1>0.99</mu1>
-    <mu2>0.99</mu2>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="base2__INPUT_INTERFACE">
-    <material>Gazebo/Red</material>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="shoulder2__INPUT_INTERFACE">
-    <material>Gazebo/Red</material>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="elbow2__INPUT_INTERFACE">
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="leg2__LAST_LINK">
-    <material>Gazebo/Grey</material>
-    <mu1>0.99</mu1>
-    <mu2>0.99</mu2>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="base3__INPUT_INTERFACE">
-    <material>Gazebo/Red</material>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="shoulder3__INPUT_INTERFACE">
-    <material>Gazebo/Red</material>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="elbow3__INPUT_INTERFACE">
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="leg3__LAST_LINK">
-    <material>Gazebo/Grey</material>
-    <mu1>0.99</mu1>
-    <mu2>0.99</mu2>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="base4__INPUT_INTERFACE">
-    <material>Gazebo/Red</material>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="shoulder4__INPUT_INTERFACE">
-    <material>Gazebo/Red</material>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="elbow4__INPUT_INTERFACE">
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="leg4__LAST_LINK">
-    <material>Gazebo/Grey</material>
-    <mu1>0.99</mu1>
-    <mu2>0.99</mu2>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="base5__INPUT_INTERFACE">
-    <material>Gazebo/Red</material>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="shoulder5__INPUT_INTERFACE">
-    <material>Gazebo/Red</material>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="elbow5__INPUT_INTERFACE">
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="leg5__LAST_LINK">
-    <material>Gazebo/Grey</material>
-    <mu1>0.99</mu1>
-    <mu2>0.99</mu2>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="base6__INPUT_INTERFACE">
-    <material>Gazebo/Red</material>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="shoulder6__INPUT_INTERFACE">
-    <material>Gazebo/Red</material>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="elbow6__INPUT_INTERFACE">
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="leg6__LAST_LINK">
-    <material>Gazebo/Grey</material>
-    <mu1>0.99</mu1>
-    <mu2>0.99</mu2>
-    <static>false</static>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="base1">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="base1_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/base1/torque</topicName>
-      <jointName>base1</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="shoulder1">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="shoulder1_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/shoulder1/torque</topicName>
-      <jointName>shoulder1</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="elbow1">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="elbow1_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/elbow1/torque</topicName>
-      <jointName>elbow1</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="base2">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="base2_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/base2/torque</topicName>
-      <jointName>base2</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="shoulder2">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="shoulder2_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/shoulder2/torque</topicName>
-      <jointName>shoulder2</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="elbow2">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="elbow2_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/elbow2/torque</topicName>
-      <jointName>elbow2</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="base3">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="base3_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/base3/torque</topicName>
-      <jointName>base3</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="shoulder3">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="shoulder3_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/shoulder3/torque</topicName>
-      <jointName>shoulder3</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="elbow3">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="elbow3_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/elbow3/torque</topicName>
-      <jointName>elbow3</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="base4">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="base4_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/base4/torque</topicName>
-      <jointName>base4</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="shoulder4">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="shoulder4_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/shoulder4/torque</topicName>
-      <jointName>shoulder4</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="elbow4">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="elbow4_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/elbow4/torque</topicName>
-      <jointName>elbow4</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="base5">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="base5_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/base5/torque</topicName>
-      <jointName>base5</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="shoulder5">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="shoulder5_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/shoulder5/torque</topicName>
-      <jointName>shoulder5</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="elbow5">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="elbow5_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/elbow5/torque</topicName>
-      <jointName>elbow5</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="base6">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="base6_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/base6/torque</topicName>
-      <jointName>base6</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="shoulder6">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="shoulder6_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/shoulder6/torque</topicName>
-      <jointName>shoulder6</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo reference="elbow6">
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <!-- joint_torque_sensor plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros_ft_sensor.so" name="elbow6_ros_ft_sensor">
-      <robotNamespace>/m6</robotNamespace>
-      <updateRate>200.0</updateRate>
-      <gaussianNoise>0.025</gaussianNoise>
-      <topicName>sensors/elbow6/torque</topicName>
-      <jointName>elbow6</jointName>
-    </plugin>
-  </gazebo>
-  <gazebo>
-    <plugin filename="libgazebo_ros_p3d.so" name="p3d">
-      <alwaysOn>true</alwaysOn>
-      <updateRate>1000.0</updateRate>
-      <bodyName>base_link</bodyName>
-      <topicName>nav_msgs</topicName>
-      <frameName>world</frameName>
-      <xyzOffsets>0 0 0.0</xyzOffsets>
-      <rpyOffsets>0 0 0.0</rpyOffsets>
-    </plugin>
-  </gazebo>
+  
 </robot>
