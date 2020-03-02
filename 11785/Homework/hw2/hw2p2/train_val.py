@@ -18,6 +18,9 @@ faulthandler.enable()
 from utils import init_weights
 from model import ResNet
 
+torch.set_num_threads(2)
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--batch_size',type=int, default=32, help='Batch size')
 parser.add_argument('--lr',type=float, default=0.001,help='Learning rate')
@@ -46,8 +49,6 @@ def train(data_loader, model, criterion, optimizer, device):
         
         step_loss = criterion(pred, target.long())
         loss += step_loss.item()
-        
-        import pdb; pdb.set_trace()
 
         _, pred_labels = torch.max(F.softmax(pred, dim=1),1)
         pred_labels.view(-1)
@@ -56,9 +57,6 @@ def train(data_loader, model, criterion, optimizer, device):
         
         step_loss.backward()
         count += 1
-
-        if count % 50 ==49:
-            print(f"Step {count}: Loss: {step_loss}")
     
     acc /= count
     loss /= count
