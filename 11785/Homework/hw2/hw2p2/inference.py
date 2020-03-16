@@ -4,8 +4,6 @@ import os
 import time
 import pandas as pd
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -86,6 +84,7 @@ def verification(data_loader, model, device, mode):
             score_list.append(value)
             truth_list.append(truth)
     else:
+        count = 0
         for fig1, fig2, name1, name2 in data_loader:
             
             fig1 = fig1.to(device)
@@ -102,6 +101,8 @@ def verification(data_loader, model, device, mode):
             name_list1.append(name1)
             name_list2.append(name2)
             score_list.append(value)
+            count += 1
+            print(count)
         
     return name_list1, name_list2, score_list, truth_list
 
@@ -145,9 +146,11 @@ if __name__ == '__main__':
 
     ver_loader = DataLoader(
         ver_dataset,
-        batch_size = 1,
+        batch_size = 8,
         shuffle=False
     )
+
+    print(f"Verification Dataset Length: {len(ver_dataset)}")
 
     #Hyperparameters
     num_channel = 3
@@ -158,7 +161,7 @@ if __name__ == '__main__':
     index_dict = index_mapping()
 
     model = ResNet(num_channel,num_class,hidden_sizes)
-    model.load_state_dict(torch.load('42_model1.pth.tar'))
+    model.load_state_dict(torch.load('54_model1.pth.tar'))
     model.to(device)
 
     # names, preds = test_class(class_loader, model, device)
@@ -172,10 +175,12 @@ if __name__ == '__main__':
     # class_results.to_csv('class.csv', index=False)
 
     names1, names2, score_list, truth_list = verification(ver_loader, model, device, mode=args.mode)
+    import pdb; pdb.set_trace()
     names1 = np.hstack(names1)
     names2 = np.hstack(names2)
     scores = np.hstack(score_list)
-    truth = np.hstack(truth_list)
+    if len(truth_list) > 0:
+        truth = np.hstack(truth_list)
 
     names = np.core.defchararray.add(names1, ' ')
     names = np.core.defchararray.add(names, names2)

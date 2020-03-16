@@ -1,3 +1,4 @@
+#%%
 import os
 import sys
 import pandas as pd
@@ -11,6 +12,7 @@ from torch.utils.data import DataLoader, Dataset
 from sklearn.metrics import roc_auc_score
 from PIL import Image
 
+#%%
 
 def init_weights(m):
     if type(m) == nn.Conv2d or type(m) == nn.Linear:
@@ -19,6 +21,43 @@ def init_weights(m):
 def get_auc(y_true, y_score):
     auc = roc_auc_score(y_true, y_score)
     return auc
+
+# class AngleLoss(nn.Module):
+#     def __init__(self, gamma=0):
+#         super(AngleLoss, self).__init__()
+#         self.gamma   = gamma
+#         self.it = 0
+#         self.LambdaMin = 5.0
+#         self.LambdaMax = 1500.0
+#         self.lamb = 1500.0
+
+#     def forward(self, input, target):
+#         self.it += 1
+#         cos_theta,phi_theta = input
+#         target = target.view(-1,1) #size=(B,1)
+
+#         index = torch.zeros_like(cos_theta) #size=(B,Classnum)
+#         index.scatter_(1,target.detach().view(-1,1),1)
+#         # index = torch.LongTensor(index)
+#         index = index.long()
+#         # index = Variable(index)
+
+#         # import pdb; pdb.set_trace()
+
+#         self.lamb = max(self.LambdaMin,self.LambdaMax/(1+0.1*self.it ))
+#         output = cos_theta.detach() #size=(B,Classnum)
+#         output[index] -= cos_theta[index]*(1.0+0)/(1+self.lamb)
+#         output[index] += phi_theta[index]*(1.0+0)/(1+self.lamb)
+
+#         logpt = F.log_softmax(output,dim=1)
+#         logpt = logpt.gather(1,target)
+#         logpt = logpt.view(-1)
+#         pt = torch.exp(logpt)
+
+#         loss = -1 * (1-pt)**self.gamma * logpt
+#         loss = loss.mean()
+
+#         return loss
 
 class AngleLoss(nn.Module):
     def __init__(self, gamma=0):
@@ -36,7 +75,7 @@ class AngleLoss(nn.Module):
 
         index = cos_theta.data * 0.0 #size=(B,Classnum)
         index.scatter_(1,target.data.view(-1,1),1)
-        index = index.byte()
+        index = index.bool()
         index = Variable(index)
 
         self.lamb = max(self.LambdaMin,self.LambdaMax/(1+0.1*self.it ))
@@ -44,7 +83,7 @@ class AngleLoss(nn.Module):
         output[index] -= cos_theta[index]*(1.0+0)/(1+self.lamb)
         output[index] += phi_theta[index]*(1.0+0)/(1+self.lamb)
 
-        logpt = F.log_softmax(output)
+        logpt = F.log_softmax(output,dim=1)
         logpt = logpt.gather(1,target)
         logpt = logpt.view(-1)
         pt = Variable(logpt.data.exp())
