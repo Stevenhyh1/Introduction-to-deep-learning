@@ -37,7 +37,6 @@
      
         //freopen("aa.in", "r", stdin);
      
-     
     	scanf("%d %d %d", &n, &m, &k);
     	for(int i = 0; i < n; ++i) {
     		scanf("%s", g[i]);
