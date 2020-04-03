@@ -5,20 +5,39 @@ from torch.utils.data import Dataset
 
 def load_data (file_path):
     data = np.load(file_path, allow_pickle=True)
-    data_dict = {}
-    cur = 0
+    data_array = []
     eps = 1e-8
-    index_array = np.zeros(len(data),dtype=int)
     for i in range(len(data)):
         cur_data = data[i]
         mean = np.mean(cur_data, axis=1).reshape(-1,1)
-        var = np.var(cur_data,axis=1).reshape(-1,1)
-        data_dict[cur] = (cur_data-mean)/np.sqrt(var+eps)
-        index_array[i] = cur
-        cur += len(cur_data)
-    return data_dict, index_array
+        var = np.var(cur_data, axis=1).reshape(-1,1)
+        data_array.append((cur_data-mean)/np.sqrt(var+eps))
+    return data_array
+
+def load_label (file_path):
+    label = np.load(file_path, allow_pickle=True)
+    label = label+1
+    return list(label)
+
+class SpeechDataset(Dataset):
+    def __init__(self, data, label=None):
+        self.data = list(data)
+        self.label = list(label)
+    
+    def __len__(self):
+        return len(self.label)
+
+    def __getitem__(self, idx):
+        if self.label == None:
+            return self.data[idx]
+        return self.data[idx], self.label[idx]
 
 if __name__ == "__main__":
-    data_path = '/home/stevenhyh/Data/hw3p2/wsj0_train'
-    data_dict, index_array = load_data(data_path)
-    import pdb; pdb.set_trace()
+    data_path = '/home/yihe/Data/hw3p2/wsj0_dev.npy'
+    data_array = load_data(data_path)
+    
+
+    label_path = '/home/yihe/Data/hw3p2/wsj0_dev_merged_labels.npy'
+    label_array = load_label(label_path)
+
+    # import pdb; pdb.set_trace()
