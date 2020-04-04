@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import argparse
 import os
 import time
+import pkbar
 
 import torch
 import torch.nn as nn
@@ -11,6 +12,7 @@ import torch.nn.functional as F
 from torch.optim import Adam
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 from Levenshtein import distance as levenshtein_distance
 from ctcdecode import CTCBeamDecoder
 
@@ -21,26 +23,24 @@ from config.phoneme_list import PHONEME_LIST, PHONEME_MAP
 phonemes = PHONEME_MAP
 phonemes.insert(0,' ')
 
-torch.set_num_threads(4)
+torch.set_num_threads(6)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
+parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
 parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
 parser.add_argument('--weight_decay', type=float, default=5e-5, help='weightdecay')
-parser.add_argument('--hidden_dim', type=int, default=256, help='Hideen dimension of LSTM')
+parser.add_argument('--hidden_dim', type=int, default=512, help='Hideen dimension of LSTM')
 parser.add_argument('--hidden_layer', type=int, default=3, help='LSTM layers')
 parser.add_argument('--num_epoch', type=int, default=100, help='Number of Epoch')
 parser.add_argument('--dropout', type=float, default=0.2, help='dropout rate')
-# parser.add_argument('--train_data_path', type=str, default='/home/yihe/Data/hw3p2/wsj0_train')
-# parser.add_argument('--train_label_path', type=str, default='/home/yihe/Data/hw3p2/wsj0_train_merged_labels.npy')
-parser.add_argument('--train_data_path', type=str, default='/home/yihe/Data/hw3p2/wsj0_dev.npy')
-parser.add_argument('--train_label_path', type=str, default='/home/yihe/Data/hw3p2/wsj0_dev_merged_labels.npy')
+parser.add_argument('--train_data_path', type=str, default='/home/yihe/Data/hw3p2/wsj0_train')
+parser.add_argument('--train_label_path', type=str, default='/home/yihe/Data/hw3p2/wsj0_train_merged_labels.npy')
 parser.add_argument('--dev_data_path', type=str, default='/home/yihe/Data/hw3p2/wsj0_dev.npy')
 parser.add_argument('--dev_label_path', type=str, default='/home/yihe/Data/hw3p2/wsj0_dev_merged_labels.npy')
-parser.add_argument('--k', type=int, default=12)
+parser.add_argument('--log_dir', type=str, default='./Tensorboard/')
 args = parser.parse_args()
 
-def Train(data, model, criterion, optimizer):
+def Train(data, model, criterion, optimizer, kbar):
     epoch_loss = 0
     count = 0
     model.train()
@@ -62,13 +62,15 @@ def Train(data, model, criterion, optimizer):
         optimizer.step()
         count += 1
     
+        kbar.update(count)
+    
     return epoch_loss/count
 
-def Val(data, model, criterion, decoder):
+def Val(data, model, criterion, decoder, kbar):
     epoch_loss = 0
     count = 0
     epoch_dis = 0
-    model.train()
+    model.eval()
 
     for padded_input, padded_target, input_lens, target_lens in data:
         
@@ -84,7 +86,7 @@ def Val(data, model, criterion, decoder):
         count += 1
 
         probs = pred.transpose(0,1)
-        # import pdb; pdb.set_trace()
+
         out, _, _, out_lens = decoder.decode(probs, pred_lens)
         cur_dist = 0
         for i in range(batch_size):
@@ -92,15 +94,16 @@ def Val(data, model, criterion, decoder):
             best_phenome = ''
             for j in best_seq:
                 best_phenome += phonemes[j] 
-            # import pdb; pdb.set_trace()
-            target_seq = targets[i].int()
+
+            target_seq = targets[i].int()[:target_lens[i]]
             target_phenome = ''
             for j in target_seq:
                 target_phenome += phonemes[j] 
             cur_dist += levenshtein_distance(best_phenome, target_phenome)
-        # import pdb; pdb.set_trace()
+
         cur_dist /= batch_size
         epoch_dis += cur_dist
+        kbar.update(count)
 
     return epoch_loss/count, epoch_dis/count
 
@@ -131,6 +134,8 @@ if __name__ == "__main__":
         shuffle = True,
         collate_fn=collate_wrapper
     )
+    # import pdb; pdb.set_trace()
+    train_kbar = pkbar.Kbar(int(len(train_data)/args.batch_size)+1)
 
     print('Loading validation data... ')
     val_data = load_data(val_data_path)
@@ -142,6 +147,7 @@ if __name__ == "__main__":
         shuffle = False,
         collate_fn=collate_wrapper
     )
+    val_kbar = pkbar.Kbar(int(len(val_data)/args.batch_size)+1)
 
     print('Data loaded!')
 
@@ -153,6 +159,7 @@ if __name__ == "__main__":
     decoder = CTCBeamDecoder(phonemes, beam_width=10, num_processes=4, log_probs_input=True)
     # import pdb; pdb.set_trace()
 
+    writer = SummaryWriter(args.log_dir)
     global_dis = 10000
     for epoch in range(args.num_epoch):
         epoch = epoch+1
@@ -162,21 +169,26 @@ if __name__ == "__main__":
             train_loader,
             model,
             criterion,
-            optimizer
+            optimizer,
+            train_kbar
         )
         train_end = time.time()
         scheduler.step()
         print(f"Epoch {epoch} completed in: {train_end-train_start}s \t Loss: {train_loss}")
+        writer.add_scalar('Loss/Train', train_loss, epoch)
 
         val_start = time.time()
         val_loss, val_dis = Val(
             val_loader,
             model,
             criterion,
-            decoder
+            decoder,
+            val_kbar
         )
         val_end = time.time()
         if val_dis < global_dis:
-            torch.save(model.state_dict(), f".model/{epoch}_model.pth.tar")
+            torch.save(model.state_dict(), f"./model/{epoch}_model.pth.tar")
             global_dis = val_dis
         print(f"Validation Loss: {val_loss} \t Validation Dis: {val_dis}")
+        writer.add_scalar('Loss/Validation',val_loss, epoch)
+        writer.add_scalar('Levenshtein',val_dis, epoch)

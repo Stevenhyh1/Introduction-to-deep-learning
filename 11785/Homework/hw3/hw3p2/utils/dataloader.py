@@ -22,15 +22,17 @@ def load_label (file_path):
 class SpeechDataset(Dataset):
     def __init__(self, data, label=None):
         self.data = list(data)
-        self.label = list(label)
+        self.label = label
+        if label != None:
+            self.label = list(label)
     
     def __len__(self):
-        return len(self.label)
+        return len(self.data)
 
     def __getitem__(self, idx):
         if self.label == None:
-            return self.data[idx]
-        return self.data[idx], self.label[idx]
+            return torch.tensor(self.data[idx])
+        return torch.tensor(self.data[idx]), torch.tensor(self.label[idx])
 
 if __name__ == "__main__":
     data_path = '/home/yihe/Data/hw3p2/wsj0_dev.npy'
