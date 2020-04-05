@@ -24,13 +24,14 @@ phonemes = PHONEME_MAP
 phonemes.insert(0,' ')
 
 torch.set_num_threads(6)
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
 parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
 parser.add_argument('--weight_decay', type=float, default=5e-5, help='weightdecay')
 parser.add_argument('--hidden_dim', type=int, default=512, help='Hideen dimension of LSTM')
-parser.add_argument('--hidden_layer', type=int, default=3, help='LSTM layers')
+parser.add_argument('--hidden_layer', type=int, default=4, help='LSTM layers')
 parser.add_argument('--num_epoch', type=int, default=100, help='Number of Epoch')
 parser.add_argument('--dropout', type=float, default=0.2, help='dropout rate')
 parser.add_argument('--train_data_path', type=str, default='/home/yige/Data/hw3p2/wsj0_train')
@@ -159,7 +160,7 @@ if __name__ == "__main__":
     decoder = CTCBeamDecoder(phonemes, beam_width=10, num_processes=4, log_probs_input=True)
     # import pdb; pdb.set_trace()
 
-    writer = SummaryWriter('Tensorboard0', comment='0')
+    writer = SummaryWriter(args.log_dir)
     # global_dis = 10000
     for epoch in range(args.num_epoch):
         epoch = epoch+1
@@ -187,7 +188,7 @@ if __name__ == "__main__":
         )
         val_end = time.time()
         # if val_dis < global_dis:
-        torch.save(model.state_dict(), f"./model/{epoch}_model.pth.tar")
+        torch.save(model.state_dict(), f"./model/{epoch}_model1.pth.tar")
         #     global_dis = val_dis
         print(f"Validation Loss: {val_loss} \t Validation Dis: {val_dis}")
         writer.add_scalar('Loss/Validation',val_loss, epoch)
