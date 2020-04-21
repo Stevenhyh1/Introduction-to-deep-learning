@@ -1,7 +1,8 @@
-.vscode
+*.vscode
 __pycache__
-.pyc
-.npy
-.zip
-.tar
+*.pyc
+*.npy
+*.zip
+*.tar
+*.idea
 model/

@@ -58,6 +58,7 @@ class BiLSTM1(nn.Module):
 
         return out, out_lens
 
+
 class BiLSTM(nn.Module):
     
     def __init__(self, input_dim, hidden_dim, output_dim, num_layer, dropout, bidirectional=True):
