@@ -1,19 +1,10 @@
 import numpy as np
-import torch 
-import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
-import torch.nn.utils as utils
-from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence
-import pickle as pk
-from torch.utils.data import DataLoader, Dataset 
-import time
-import pandas as pd
-import Levenshtein
+import torch
+from torch.utils.data import DataLoader, Dataset
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-letter_list = ['<pad>','A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
-               'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '-', "'", '.', '_', '+', ' ','<sos>','<eos>']
+letter_list = ['<pad>', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
+               'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '-', "'", '.', '_', '+', ' ', '<sos>', '<eos>']
 
 
 def create_list(train_label_path):
@@ -114,15 +105,14 @@ def collate_wrapper_test(batch_data):
 
 def load_data(file_path):
     data = np.load(file_path, allow_pickle=True)
-    # data_array = []
-    # eps = 1e-8
-    # for i in range(len(data)):
-    #     cur_data = data[i]
-    #     mean = np.mean(cur_data, axis=1).reshape(-1, 1)
-    #     var = np.var(cur_data, axis=1).reshape(-1, 1)
-    #     data_array.append((cur_data-mean)/np.sqrt(var+eps))
-    # return data_array
-    return data
+    data_array = []
+    eps = 1e-8
+    for i in range(len(data)):
+        cur_data = data[i]
+        mean = np.mean(cur_data, axis=1).reshape(-1, 1)
+        var = np.var(cur_data, axis=1).reshape(-1, 1)
+        data_array.append((cur_data-mean)/np.sqrt(var+eps))
+    return data_array
 
 
 def load_label(file_path):
