@@ -1,27 +1,20 @@
 import argparse
 import os
 import pkbar
-import time
 import numpy as np
 import pandas as pd
-from Levenshtein import distance
 
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 import torch
-torch.set_num_threads(6)
-import torch.nn as nn
-from torch.optim import SGD, Adam
-from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
-
 from model import Seq2Seq
-from dataloader import SpeechDataset, load_label, load_data
-from dataloader import collate_wrapper, collate_wrapper_test, create_list, create_dict, transcript_encoding, collate_test
+from dataloader import SpeechDataset, load_data
+from dataloader import collate_wrapper_test, create_dict
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+torch.set_num_threads(6)
 
 parser = argparse.ArgumentParser()
 
@@ -47,8 +40,8 @@ parser.add_argument('--inf_data_path', type=str, default='test_new.npy')
 parser.add_argument('--log_dir', type=str, default='./Tensorboard/')
 args = parser.parse_args()
 
-def test(model, val_loader, index2letter, pbar):
 
+def test(model, val_loader, index2letter, pbar):
     model.eval()
     prediction_list = []
 
@@ -57,7 +50,8 @@ def test(model, val_loader, index2letter, pbar):
         with torch.no_grad():
 
             padded_input = padded_input.to(DEVICE)
-            import pdb; pdb.set_trace()            
+            import pdb;
+            pdb.set_trace()
             predictions = model(padded_input, input_lens, epoch=0, text_input=None, istrain=False)
             # import pdb; pdb.set_trace()
             inferences = torch.argmax(predictions, dim=2)
@@ -73,16 +67,15 @@ def test(model, val_loader, index2letter, pbar):
             # prediction = inferences[:i]
             # import pdb; pdb.set_trace()
             prediction_list.append(inference)
-            
-      
+
     return prediction_list
 
-if __name__ == '__main__':
 
-    letter_list = ['<pad>', "'", '+', '-', '.', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
-     'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '_', ' ', '<sos>', '<eos>']
+if __name__ == '__main__':
+    letter_list = ['<pad>', "'", '+', '-', '.', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
+                   'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '_', ' ', '<sos>', '<eos>']
     letter2index, index2letter = create_dict(letter_list)
-     
+
     inf_data_path = os.path.join(args.data_root_dir, args.inf_data_path)
     print('Load Testing Data')
     inf_data = load_data(inf_data_path)
@@ -95,13 +88,13 @@ if __name__ == '__main__':
     )
     pbar = pkbar.Pbar(name='Inference', target=len(inf_data))
 
-    model = Seq2Seq(input_dim=args.input_dim, vocab_size=len(letter_list), hidden_dim=args.hidden_dim, 
+    model = Seq2Seq(input_dim=args.input_dim, vocab_size=len(letter_list), hidden_dim=args.hidden_dim,
                     value_size=args.value_size, key_size=args.key_size, pyramidlayers=args.encoder_layers)
     model.to(DEVICE)
     model.load_state_dict(torch.load('./models/76_model.pth.tar'))
     prediction_list = test(model, inf_loader, index2letter, pbar)
 
-    index = np.linspace(0, len(prediction_list)-1,len(prediction_list)).astype(np.int32)
+    index = np.linspace(0, len(prediction_list) - 1, len(prediction_list)).astype(np.int32)
     test_result = pd.DataFrame({'Id': index, 'Predicted': prediction_list})
     print('Saving predictions...')
     test_result.to_csv('Test.csv', index=False)
