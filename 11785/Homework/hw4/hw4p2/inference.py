@@ -24,12 +24,6 @@ parser.add_argument('--encoder_layers', type=int, default=4, help='LSTM layers')
 parser.add_argument('--value_size', type=int, default=128, help='Value size of attention')
 parser.add_argument('--key_size', type=int, default=128, help='Key size of attention')
 
-parser.add_argument('--num_epoch', type=int, default=100, help='Number of Epoch')
-parser.add_argument('--dropout', type=float, default=0.2, help='dropout rate')
-parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
-parser.add_argument('--lr', type=float, default=5e-3, help='Learning rate')
-parser.add_argument('--weight_decay', type=float, default=5e-5, help='weightdecay')
-
 parser.add_argument('--data_root_dir', type=str, default='/home/yihe/Data/hw4p2/', help='Root directory')
 parser.add_argument('--train_data_path', type=str, default='train_new.npy')
 parser.add_argument('--train_label_path', type=str, default='train_transcripts.npy')
@@ -50,10 +44,8 @@ def test(model, val_loader, index2letter, pbar):
         with torch.no_grad():
 
             padded_input = padded_input.to(DEVICE)
-            import pdb;
-            pdb.set_trace()
+
             predictions = model(padded_input, input_lens, epoch=0, text_input=None, istrain=False)
-            # import pdb; pdb.set_trace()
             inferences = torch.argmax(predictions, dim=2)
             inferences = inferences.squeeze(0)
 
@@ -62,10 +54,7 @@ def test(model, val_loader, index2letter, pbar):
                 if index2letter[char.item()] == '<eos>':
                     break
                 inference += index2letter[char.item()]
-            # pbar.update(batch)
             print(inference)
-            # prediction = inferences[:i]
-            # import pdb; pdb.set_trace()
             prediction_list.append(inference)
 
     return prediction_list

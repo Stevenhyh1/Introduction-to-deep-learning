@@ -8,19 +8,6 @@ from torch.autograd import Variable
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
-class LockedDropout(nn.Module):
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, x, dropout=0.5):
-        if not self.training or not dropout:
-            return x
-        m = x.data.new(1, x.size(1), x.size(2)).bernoulli_(1 - dropout)
-        mask = Variable(m, requires_grad=False) / (1 - dropout)
-        mask = mask.expand_as(x)
-        return mask * x
-
-
 class PyramidLSTM(nn.Module):
     def __init__(self, input_dim, hidden_dim):
         super(PyramidLSTM, self).__init__()
@@ -40,7 +27,6 @@ class PyramidLSTM(nn.Module):
         if x.size(0) % 2 is not 0:
             padding = torch.zeros(1, batch_size, self.hidden_dim * 2).to(DEVICE)
             x = torch.cat((x, padding), dim=0)
-            # x = x[:-1]
 
         new_length = int(x.size(0) / 2)
         x = x.transpose(0, 1)  # (B, T, D)
@@ -53,7 +39,6 @@ class PyramidLSTM(nn.Module):
             else:
                 sample_len = int(sample_len / 2) + 1
             lengths[i] = sample_len
-        # lengths //= 2
 
         x = utils.rnn.pack_padded_sequence(x, lengths, enforce_sorted=False)
 
@@ -73,10 +58,9 @@ class Encoder(nn.Module):
         self.bidirectional = bidirectional
 
         self.blstm = nn.LSTM(self.input_dim, self.hidden_dims, num_layers=1, bidirectional=self.bidirectional)
-        self.lockdrop = LockedDropout()
 
         self.pblstm = []
-        for i in range(self.pyramid_layer):
+        for _ in range(self.pyramid_layer):
             self.pblstm.append(PyramidLSTM(self.hidden_dims * 4, self.hidden_dims))
         self.pblstm = nn.ModuleList(self.pblstm)
 
@@ -90,18 +74,16 @@ class Encoder(nn.Module):
         :return: keys: keys for attention layer
                  values: values for attention layer
         """
-        # import pdb; pdb.set_trace()
+
         packed_x = utils.rnn.pack_padded_sequence(x, lengths, enforce_sorted=False)
         outputs, _ = self.blstm(packed_x)
 
         for i, pblstm_layer in enumerate(self.pblstm):
             outputs, lengths = pblstm_layer(outputs)
             outputs, out_lens = utils.rnn.pad_packed_sequence(outputs)
-            outputs = self.lockdrop(outputs, 0.2)
             if i != self.pyramid_layer - 1:
                 outputs = utils.rnn.pack_padded_sequence(outputs, out_lens, enforce_sorted=False)
 
-        # import pdb; pdb.set_trace()
         linear_input = outputs
         keys = self.key_network(linear_input)
         values = self.value_network(linear_input)
@@ -193,14 +175,9 @@ class Decoder(nn.Module):
         for i in range(max_len):
 
             teacher_forcing = np.random.uniform(0, 1)
-            if epoch < 20:
-                p_forcing = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1,
-                             0.12, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]
-                cur_p = p_forcing[epoch]
-            else:
-                cur_p = 0.5
+            cur_p = 0.5
 
-            if istrain and teacher_forcing > cur_p:
+            if istrain and epoch>20 and teacher_forcing > cur_p:
                 embedding_letter = embeddings[:, i, :]
             else:
                 embedding_letter = self.embedding(prediction.argmax(dim=-1))
@@ -222,10 +199,7 @@ class Decoder(nn.Module):
             linear_input = torch.cat([lstm_outputs, context], dim=1)
             prediction = self.linear(linear_input)
 
-            # if istrain:
             predictions.append(prediction.unsqueeze(1))
-            # else:
-            #     predictions.append(predictions.argmax(dim=-1).unsqueeze)
 
         return torch.cat(predictions, dim=1)
 

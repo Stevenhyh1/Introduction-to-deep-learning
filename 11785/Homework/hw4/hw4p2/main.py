@@ -30,7 +30,7 @@ parser.add_argument('--encoder_layers', type=int, default=3, help='LSTM layers')
 parser.add_argument('--value_size', type=int, default=256, help='Value size of attention')
 parser.add_argument('--key_size', type=int, default=256, help='Key size of attention')
 
-parser.add_argument('--num_epoch', type=int, default=100, help='Number of Epoch')
+parser.add_argument('--num_epoch', type=int, default=200, help='Number of Epoch')
 parser.add_argument('--dropout', type=float, default=0.2, help='dropout rate')
 parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
 parser.add_argument('--lr', type=float, default=5e-3, help='Learning rate')
@@ -66,7 +66,6 @@ def train(model, train_loader, criterion, optimizer, epoch, train_batch_num, wri
             padded_target = padded_target.type(torch.LongTensor).to(DEVICE)
             padded_decoder = padded_decoder.type(torch.LongTensor).to(DEVICE)
 
-            # import pdb; pdb.set_trace()
             predictions = model(padded_input, input_lens, epoch, padded_decoder)
 
             mask = torch.arange(max_len).unsqueeze(0) < torch.tensor(target_lens).unsqueeze(1)
@@ -117,7 +116,6 @@ def val(model, val_loader, criterion, epoch, val_batch_num, index2letter, writer
             padded_decoder = padded_decoder.to(DEVICE)
 
             predictions = model(padded_input, input_lens, epoch, padded_decoder)
-            # import pdb; pdb.set_trace()
             inferences = torch.argmax(predictions, dim=2)
             targets = padded_target
 
@@ -162,8 +160,6 @@ def val(model, val_loader, criterion, epoch, val_batch_num, index2letter, writer
 
 if __name__ == "__main__":
 
-    # torch.manual_seed(11785)
-
     train_data_path = os.path.join(args.data_root_dir, args.train_data_path)
     train_label_path = os.path.join(args.data_root_dir, args.train_label_path)
     val_data_path = os.path.join(args.data_root_dir, args.dev_data_path)
@@ -203,10 +199,8 @@ if __name__ == "__main__":
     model = Seq2Seq(input_dim=args.input_dim, vocab_size=len(letter_list), hidden_dim=args.hidden_dim,
                     value_size=args.value_size, key_size=args.key_size, pyramidlayers=args.encoder_layers)
     model.to(DEVICE)
-    # model.load_state_dict(torch.load('./models/97_model.pth.tar'))
     optimizer = Adam(model.parameters(), lr=args.lr)
-    # scheduler = StepLR(optimizer, step_size=1, gamma=0.95)
-    scheduler = CosineAnnealingLR(optimizer, 120)
+    scheduler = CosineAnnealingLR(optimizer, 150)
     criterion = nn.CrossEntropyLoss(reduction='none').to(DEVICE)
 
     writer = SummaryWriter(args.log_dir)
