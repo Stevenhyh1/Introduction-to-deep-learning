@@ -22,42 +22,6 @@ def get_auc(y_true, y_score):
     auc = roc_auc_score(y_true, y_score)
     return auc
 
-# class AngleLoss(nn.Module):
-#     def __init__(self, gamma=0):
-#         super(AngleLoss, self).__init__()
-#         self.gamma   = gamma
-#         self.it = 0
-#         self.LambdaMin = 5.0
-#         self.LambdaMax = 1500.0
-#         self.lamb = 1500.0
-
-#     def forward(self, input, target):
-#         self.it += 1
-#         cos_theta,phi_theta = input
-#         target = target.view(-1,1) #size=(B,1)
-
-#         index = torch.zeros_like(cos_theta) #size=(B,Classnum)
-#         index.scatter_(1,target.detach().view(-1,1),1)
-#         # index = torch.LongTensor(index)
-#         index = index.long()
-#         # index = Variable(index)
-
-#         # import pdb; pdb.set_trace()
-
-#         self.lamb = max(self.LambdaMin,self.LambdaMax/(1+0.1*self.it ))
-#         output = cos_theta.detach() #size=(B,Classnum)
-#         output[index] -= cos_theta[index]*(1.0+0)/(1+self.lamb)
-#         output[index] += phi_theta[index]*(1.0+0)/(1+self.lamb)
-
-#         logpt = F.log_softmax(output,dim=1)
-#         logpt = logpt.gather(1,target)
-#         logpt = logpt.view(-1)
-#         pt = torch.exp(logpt)
-
-#         loss = -1 * (1-pt)**self.gamma * logpt
-#         loss = loss.mean()
-
-#         return loss
 
 class AngleLoss(nn.Module):
     def __init__(self, gamma=0):
@@ -94,15 +58,32 @@ class AngleLoss(nn.Module):
         return loss
 
 class CenterLoss(nn.Module):
-    def __init__(self, num_class, feature_dim, device):
-        super(CenterLoss,self).__init__()
-        self.num_class = num_class
-        self.feature_dim = feature_dim
-        self.device = device
-        self.alpha = alpha
-        self.centers = nn.Parameter(torch.randn(self.num_class, self.feature_dim)).to(self.device)
-        
-    def forward(self, x, target):
+    """Center loss.
+    
+    Reference:
+    Wen et al. A Discriminative Feature Learning Approach for Deep Face Recognition. ECCV 2016.
+    
+    Args:
+        num_classes (int): number of classes.
+        feat_dim (int): feature dimension.
+    """
+    def __init__(self, num_classes, feat_dim, use_gpu=True):
+        super(CenterLoss, self).__init__()
+        self.num_classes = num_classes
+        self.feat_dim = feat_dim
+        self.use_gpu = use_gpu
+
+        if self.use_gpu:
+            self.centers = nn.Parameter(torch.randn(self.num_classes, self.feat_dim).cuda())
+        else:
+            self.centers = nn.Parameter(torch.randn(self.num_classes, self.feat_dim))
+
+    def forward(self, x, labels):
+        """
+        Args:
+            x: feature matrix with shape (batch_size, feat_dim).
+            labels: ground truth labels with shape (batch_size).
+        """
         batch_size = x.size(0)
         distmat = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.num_classes) + \
                   torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(self.num_classes, batch_size).t()
@@ -176,7 +157,6 @@ def index_mapping(path='/home/yihe/Data/hw2/11-785hw2p2-s20/train_data/medium'):
         count += 1
     return dict
         
-
 
 
 if __name__ == '__main__':

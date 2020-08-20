@@ -103,17 +103,18 @@ class ResNet(nn.Module):
         x = self.layer4(x)
 
         x = self.avgpool(x)
-        x = torch.flatten(x,1)
+        feat = torch.flatten(x,1)
 
         if self.task == 'Verification':
-            return x
+            return feat
         
-        x = self.fc(x)
+        x = self.fc(feat)
+        if self.task == 'Both':
+            return feat, x
 
         return x
     
     def change_task(self,task_name):
-        
         self.task = task_name
 
 if __name__ == "__main__":

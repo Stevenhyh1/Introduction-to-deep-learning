@@ -25,16 +25,6 @@ from model import ResNet
 torch.set_num_threads(8)
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--batch_size',type=int, default=256, help='Batch size')
-parser.add_argument('--save_path',type=str,default='/home/yihe/Data/hw2/model/')
-parser.add_argument('--class_folder',type=str,default='/home/yihe/Data/hw2/11-785hw2p2-s20/test_classification/medium')
-parser.add_argument('--mode',type=str,default='test')
-
-
-args = parser.parse_args()
-
-
 def test_class(data_loader, model, device):
     model.eval()
     
@@ -114,6 +104,14 @@ if __name__ == '__main__':
     else:
         device = 'cpu'
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--batch_size',type=int, default=256, help='Batch size')
+    parser.add_argument('--save_path',type=str,default='/home/yihe/Data/hw2/model/')
+    parser.add_argument('--class_folder',type=str,default='/home/yihe/Data/hw2/11-785hw2p2-s20/test_classification/medium')
+    parser.add_argument('--mode',type=str,default='val')
+
+    args = parser.parse_args()
+
     if args.mode == 'test':
         ver_folder = '/home/yihe/Data/hw2/11-785hw2p2-s20/test_verification/'
         ver_file = '/home/yihe/Data/hw2/11-785hw2p2-s20/test_trials_verification_student.txt'
@@ -161,37 +159,37 @@ if __name__ == '__main__':
     index_dict = index_mapping()
 
     model = ResNet(num_channel,num_class,hidden_sizes)
-    model.load_state_dict(torch.load('54_model1.pth.tar'))
+    model.load_state_dict(torch.load('65_model.pth.tar'))
     model.to(device)
 
-    # names, preds = test_class(class_loader, model, device)
-    # names = np.hstack(names)
-    # preds = np.hstack(preds)
-    # true_preds = []
-    # for pred in preds:
-    #     true_preds.append(index_dict[pred])
+    names, preds = test_class(class_loader, model, device)
+    names = np.hstack(names)
+    preds = np.hstack(preds)
+    true_preds = []
+    for pred in preds:
+        true_preds.append(index_dict[pred])
 
-    # class_results = pd.DataFrame({'Id':names, 'Category': true_preds})
-    # class_results.to_csv('class.csv', index=False)
+    class_results = pd.DataFrame({'Id':names, 'Category': true_preds})
+    class_results.to_csv('class.csv', index=False)
 
-    names1, names2, score_list, truth_list = verification(ver_loader, model, device, mode=args.mode)
-    import pdb; pdb.set_trace()
-    names1 = np.hstack(names1)
-    names2 = np.hstack(names2)
-    scores = np.hstack(score_list)
-    if len(truth_list) > 0:
-        truth = np.hstack(truth_list)
+    # names1, names2, score_list, truth_list = verification(ver_loader, model, device, mode=args.mode)
+    # import pdb; pdb.set_trace()
+    # names1 = np.hstack(names1)
+    # names2 = np.hstack(names2)
+    # scores = np.hstack(score_list)
+    # if len(truth_list) > 0:
+    #     truth = np.hstack(truth_list)
 
-    names = np.core.defchararray.add(names1, ' ')
-    names = np.core.defchararray.add(names, names2)
-    ver_results = pd.DataFrame({'trial': names, 'score':scores})
-    ver_results.to_csv('ver.csv',index=False)
+    # names = np.core.defchararray.add(names1, ' ')
+    # names = np.core.defchararray.add(names, names2)
+    # ver_results = pd.DataFrame({'trial': names, 'score':scores})
+    # ver_results.to_csv('ver.csv',index=False)
 
-    if args.mode == 'val':
-        ver_truth = pd.DataFrame({'trial': names, 'score':truth})
-        ver_truth.to_csv('truth.csv',index=False)
+    # if args.mode == 'val':
+    #     ver_truth = pd.DataFrame({'trial': names, 'score':truth})
+    #     ver_truth.to_csv('truth.csv',index=False)
 
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
 
 
 
