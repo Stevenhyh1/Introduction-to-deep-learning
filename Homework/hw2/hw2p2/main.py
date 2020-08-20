@@ -114,8 +114,8 @@ if __name__ == '__main__':
     parser.add_argument('--weight_decay',type=float,default=5e-4,help='weightdecay')
     parser.add_argument('--num_epoch',type=float,default=40,help='Number of Epoch')
     parser.add_argument('--data_path',type=str,default='/home/yihe/Data/hw2p2/')
-    parser.add_argument('--mode',type=str,default='cont_pre', choices=['pretrain', 'finetune', 'cont_pre', 'cont_tune', 'eval'], help='Pretrain mode or Finetune Mode')
-    parser.add_argument('--loss',type=str,default='center',choices=['center','angle','None'], help='Loss of the model')
+    parser.add_argument('--mode',type=str,default='pretrain', choices=['pretrain', 'finetune', 'cont_pre', 'cont_tune', 'eval'], help='Pretrain mode or Finetune Mode')
+    parser.add_argument('--loss',type=str,default='None',choices=['center','angle','None'], help='Loss of the model')
     args = parser.parse_args()
 
     if torch.cuda.is_available():
