@@ -53,7 +53,6 @@ def transcript2index(transcript, letter2index):
             index_list.append(letter2index[' '])
     index_list.insert(0, letter2index['<sos>'])
     index_list.append(letter2index['<eos>'])
-
     return index_list
 
 

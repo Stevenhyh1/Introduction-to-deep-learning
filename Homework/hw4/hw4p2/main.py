@@ -22,29 +22,6 @@ from dataloader import collate_wrapper, create_dict, transcript_encoding
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 torch.set_num_threads(6)
 
-parser = argparse.ArgumentParser()
-
-parser.add_argument('--input_dim', type=int, default=40, help='Input dimenstion of model')
-parser.add_argument('--hidden_dim', type=int, default=256, help='Hidden dimension of LSTM')
-parser.add_argument('--encoder_layers', type=int, default=3, help='LSTM layers')
-parser.add_argument('--value_size', type=int, default=256, help='Value size of attention')
-parser.add_argument('--key_size', type=int, default=256, help='Key size of attention')
-
-parser.add_argument('--num_epoch', type=int, default=200, help='Number of Epoch')
-parser.add_argument('--dropout', type=float, default=0.2, help='dropout rate')
-parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
-parser.add_argument('--lr', type=float, default=5e-3, help='Learning rate')
-parser.add_argument('--weight_decay', type=float, default=5e-5, help='weightdecay')
-
-parser.add_argument('--data_root_dir', type=str, default='/home/yihe/Data/hw4p2/', help='Root directory')
-parser.add_argument('--train_data_path', type=str, default='train_new.npy')
-parser.add_argument('--train_label_path', type=str, default='train_transcripts.npy')
-parser.add_argument('--dev_data_path', type=str, default='dev_new.npy')
-parser.add_argument('--dev_label_path', type=str, default='dev_transcripts.npy')
-parser.add_argument('--log_dir', type=str, default='runs/256_3_256')
-parser.add_argument('--model_dir', type=str, default='256_3_256')
-args = parser.parse_args()
-
 
 def train(model, train_loader, criterion, optimizer, epoch, train_batch_num, writer):
     train_start = time.time()
@@ -91,7 +68,7 @@ def train(model, train_loader, criterion, optimizer, epoch, train_batch_num, wri
     writer.add_scalar('Loss/Train', epoch_loss / train_batch_num, epoch)
     writer.add_scalar('Perplexity/Train', epoch_perplexity / train_batch_num, epoch)
 
-    return
+    return epoch_loss/train_batch_num
 
 
 def val(model, val_loader, criterion, epoch, val_batch_num, index2letter, writer):
@@ -151,14 +128,37 @@ def val(model, val_loader, criterion, epoch, val_batch_num, index2letter, writer
             kbar.update(batch, values=[("loss", batch_loss), ("Dis", batch_dis)])
 
     kbar.add(1)
-    writer.add_scalar('Loss/Val', epoch_loss / train_batch_num, epoch)
-    writer.add_scalar('Perplexity/Val', epoch_perplexity / train_batch_num, epoch)
-    writer.add_scalar('Distance/val', epoch_distance / train_batch_num, epoch)
+    writer.add_scalar('Loss/Val', epoch_loss / val_batch_num, epoch)
+    writer.add_scalar('Perplexity/Val', epoch_perplexity / val_batch_num, epoch)
+    writer.add_scalar('Distance/val', epoch_distance / val_batch_num, epoch)
 
-    return
+    return epoch_loss/val_batch_num
 
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--input_dim', type=int, default=40, help='Input dimenstion of model')
+    parser.add_argument('--hidden_dim', type=int, default=256, help='Hidden dimension of LSTM')
+    parser.add_argument('--encoder_layers', type=int, default=3, help='LSTM layers')
+    parser.add_argument('--value_size', type=int, default=256, help='Value size of attention')
+    parser.add_argument('--key_size', type=int, default=256, help='Key size of attention')
+
+    parser.add_argument('--num_epoch', type=int, default=200, help='Number of Epoch')
+    parser.add_argument('--dropout', type=float, default=0.2, help='dropout rate')
+    parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
+    parser.add_argument('--lr', type=float, default=5e-3, help='Learning rate')
+    parser.add_argument('--weight_decay', type=float, default=5e-5, help='weightdecay')
+
+    parser.add_argument('--data_root_dir', type=str, default='/home/yihe/Data/hw4p2/', help='Root directory')
+    parser.add_argument('--train_data_path', type=str, default='train_new.npy')
+    parser.add_argument('--train_label_path', type=str, default='train_transcripts.npy')
+    parser.add_argument('--dev_data_path', type=str, default='dev_new.npy')
+    parser.add_argument('--dev_label_path', type=str, default='dev_transcripts.npy')
+    parser.add_argument('--log_dir', type=str, default='runs/256_3_256')
+    parser.add_argument('--model_dir', type=str, default='256_3_256')
+    args = parser.parse_args()
 
     train_data_path = os.path.join(args.data_root_dir, args.train_data_path)
     train_label_path = os.path.join(args.data_root_dir, args.train_label_path)
@@ -200,15 +200,17 @@ if __name__ == "__main__":
                     value_size=args.value_size, key_size=args.key_size, pyramidlayers=args.encoder_layers)
     model.to(DEVICE)
     optimizer = Adam(model.parameters(), lr=args.lr)
-    scheduler = CosineAnnealingLR(optimizer, 150)
+    scheduler = CosineAnnealingLR(optimizer, args.num_epoch)
     criterion = nn.CrossEntropyLoss(reduction='none').to(DEVICE)
 
     writer = SummaryWriter(args.log_dir)
-
+    best_perp = 1000
     for epoch in range(args.num_epoch):
         epoch += 1
         print(f'Epoch {epoch} starts:')
-        train(model, train_loader, criterion, optimizer, epoch, train_batch_num, writer)
+        train_perp = train(model, train_loader, criterion, optimizer, epoch, train_batch_num, writer)
         scheduler.step()
-        val(model, val_loader, criterion, epoch, val_batch_num, index2letter, writer)
-        torch.save(model.state_dict(), f"./models/{args.model_dir}/{epoch}_model.pth.tar")
+        val_perp = val(model, val_loader, criterion, epoch, val_batch_num, index2letter, writer)
+        if val_perp < best_perp:
+            torch.save(model.state_dict(), f"./models/{args.model_dir}/{epoch}_model.pth.tar")
+            best_perp = val_perp

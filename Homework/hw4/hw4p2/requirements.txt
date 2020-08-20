@@ -1,0 +1,4 @@
+numpy==1.18.1
+python-levenshtein==0.12.0
+pkbar==0.4
+tensorboard==2.2.0
